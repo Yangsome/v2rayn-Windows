@@ -409,3 +409,4 @@ FodyWeavers.xsd
 .idea/
 *.sln.iml
 .git.bak/
+.github/
