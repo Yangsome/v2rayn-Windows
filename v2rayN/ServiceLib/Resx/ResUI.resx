@@ -930,6 +930,24 @@
   <data name="SpeedtestingCompleted" xml:space="preserve">
     <value>Test completed</value>
   </data>
+  <data name="SpeedtestingCompletedDelay" xml:space="preserve">
+    <value>Delay test completed</value>
+  </data>
+  <data name="SpeedtestingCompletedRealping" xml:space="preserve">
+    <value>Real ping test completed</value>
+  </data>
+  <data name="SpeedtestingCompletedSpeed" xml:space="preserve">
+    <value>Speed test completed</value>
+  </data>
+  <data name="SpeedtestingCompletedMixed" xml:space="preserve">
+    <value>Mixed test completed</value>
+  </data>
+  <data name="SpeedtestingCompletedReachability" xml:space="preserve">
+    <value>Reachability test completed</value>
+  </data>
+  <data name="SpeedtestingFailed" xml:space="preserve">
+    <value>Speed test failed</value>
+  </data>
   <data name="TbSettingsDefFingerprint" xml:space="preserve">
     <value>Default TLS fingerprint</value>
   </data>

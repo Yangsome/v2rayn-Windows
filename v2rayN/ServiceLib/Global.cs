@@ -163,9 +163,9 @@ public class Global
 
     public static readonly List<string> SpeedTestUrls =
     [
-        @"https://nbg1-speed.hetzner.com/100MB.bin",
         @"https://speed.cloudflare.com/__down?bytes=50000000",
         @"https://speed.cloudflare.com/__down?bytes=10000000",
+        @"https://nbg1-speed.hetzner.com/100MB.bin",
         @"https://speed.cloudflare.com/__down?bytes=99999999",
         @"https://cachefly.cachefly.net/50mb.test",
         @"https://cachefly.cachefly.net/100mb.test",

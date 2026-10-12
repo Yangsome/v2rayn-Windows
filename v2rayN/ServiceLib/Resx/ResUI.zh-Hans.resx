@@ -930,6 +930,24 @@
   <data name="SpeedtestingCompleted" xml:space="preserve">
     <value>测试完成</value>
   </data>
+  <data name="SpeedtestingCompletedDelay" xml:space="preserve">
+    <value>延迟测试完成</value>
+  </data>
+  <data name="SpeedtestingCompletedRealping" xml:space="preserve">
+    <value>真连接测试完成</value>
+  </data>
+  <data name="SpeedtestingCompletedSpeed" xml:space="preserve">
+    <value>速度测试完成</value>
+  </data>
+  <data name="SpeedtestingCompletedMixed" xml:space="preserve">
+    <value>混合测试完成</value>
+  </data>
+  <data name="SpeedtestingCompletedReachability" xml:space="preserve">
+    <value>网址可达性检测完成</value>
+  </data>
+  <data name="SpeedtestingFailed" xml:space="preserve">
+    <value>测速失败</value>
+  </data>
   <data name="TbSettingsDefFingerprint" xml:space="preserve">
     <value>默认 TLS 指纹 (fingerprint)</value>
   </data>

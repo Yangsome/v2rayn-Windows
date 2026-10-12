@@ -73,7 +73,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
             }
             finally
             {
-                await UpdateFunc("", ResUI.SpeedtestingCompleted);
+                await UpdateFunc("", GetCompletedMessage(actionType));
             }
 
             lock (_runLock)
@@ -83,6 +83,22 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
 
             runCts.Dispose();
         }
+    }
+
+    /// <summary>
+    /// 按测试类型给出明确的完成提示，避免所有测试都显示笼统的"测试完成"。
+    /// </summary>
+    private static string GetCompletedMessage(ESpeedActionType actionType)
+    {
+        return actionType switch
+        {
+            ESpeedActionType.Tcping or ESpeedActionType.UdpTest => ResUI.SpeedtestingCompletedDelay,
+            ESpeedActionType.Realping => ResUI.SpeedtestingCompletedRealping,
+            ESpeedActionType.Speedtest => ResUI.SpeedtestingCompletedSpeed,
+            ESpeedActionType.Mixedtest => ResUI.SpeedtestingCompletedMixed,
+            ESpeedActionType.XReachability => ResUI.SpeedtestingCompletedReachability,
+            _ => ResUI.SpeedtestingCompleted,
+        };
     }
 
     private async Task RunAsync(ESpeedActionType actionType, List<ProfileItem> selecteds, CancellationToken ct = default)
@@ -472,6 +488,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
                 if (processService is null)
                 {
                     await UpdateFunc(it.IndexId, "", ResUI.FailedToRunCore);
+                    completedIds.TryAdd(it.IndexId, 0);
                     return;
                 }
 
@@ -497,6 +514,20 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
             catch (Exception ex)
             {
                 Logging.SaveLog(_tag, ex);
+                // 单项失败（连不上测速源、超时无流量等）不能让它永远卡在"测试中..."：
+                // 给出明确结果并标记完成，保证每一行都有交代。
+                if (!completedIds.ContainsKey(it.IndexId))
+                {
+                    completedIds.TryAdd(it.IndexId, 0);
+                    if (blSpeedTest)
+                    {
+                        await UpdateFunc(it.IndexId, "", ResUI.SpeedtestingFailed);
+                    }
+                    else
+                    {
+                        await UpdateFunc(it.IndexId, ResUI.SpeedtestingFailed);
+                    }
+                }
             }
             finally
             {
@@ -545,18 +576,37 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
         var linkedCt = linkedCts.Token;
-        // Custom chunked reader: honors cancellation on every stream read, so pressing
-        // "stop" aborts an in-flight download instantly (the third-party downloader
-        // only honored the token when starting the request).
-        await DownloaderHelper.Instance.DownloadSpeedAsync(webProxy, url, async msg =>
+
+        decimal measured = 0;
+        try
         {
-            decimal.TryParse(msg, out var dec);
-            if (dec > 0)
+            // Custom chunked reader: honors cancellation on every stream read, so pressing
+            // "stop" aborts an in-flight download instantly (the third-party downloader
+            // only honored the token when starting the request).
+            await DownloaderHelper.Instance.DownloadSpeedAsync(webProxy, url, async msg =>
             {
-                ProfileExManager.Instance.SetTestSpeed(it.IndexId, dec);
+                if (decimal.TryParse(msg, out var dec) && dec > 0)
+                {
+                    measured = dec;
+                    ProfileExManager.Instance.SetTestSpeed(it.IndexId, dec);
+                }
+                await UpdateFunc(it.IndexId, "", msg);
+            }, linkedCt);
+        }
+        catch (OperationCanceledException) when (linkedCt.IsCancellationRequested && !ct.IsCancellationRequested)
+        {
+            // 下载超时（不是用户点停止）：测速窗口内收到的流量依然有效，报实测速度；
+            // 一个字节都没下来才判定失败（例如节点根本连不上测速源）。
+            if (measured > 0)
+            {
+                ProfileExManager.Instance.SetTestSpeed(it.IndexId, measured);
+                await UpdateFunc(it.IndexId, "", measured.ToString("#0.0"));
             }
-            await UpdateFunc(it.IndexId, "", msg);
-        }, linkedCt);
+            else
+            {
+                await UpdateFunc(it.IndexId, "", ResUI.SpeedtestingFailed);
+            }
+        }
         completedIds.TryAdd(it.IndexId, 0);
     }
 

@@ -2606,6 +2606,60 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("SpeedtestingCompleted", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   查找类似 Delay test completed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingCompletedDelay {
+            get {
+                return ResourceManager.GetString("SpeedtestingCompletedDelay", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Real ping test completed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingCompletedRealping {
+            get {
+                return ResourceManager.GetString("SpeedtestingCompletedRealping", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Speed test completed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingCompletedSpeed {
+            get {
+                return ResourceManager.GetString("SpeedtestingCompletedSpeed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Mixed test completed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingCompletedMixed {
+            get {
+                return ResourceManager.GetString("SpeedtestingCompletedMixed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Reachability test completed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingCompletedReachability {
+            get {
+                return ResourceManager.GetString("SpeedtestingCompletedReachability", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Speed test failed 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingFailed {
+            get {
+                return ResourceManager.GetString("SpeedtestingFailed", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   查找类似 Press ESC to terminate the test 的本地化字符串。
