@@ -118,6 +118,79 @@ public class DownloaderHelper
         await using var stream = await downloader.DownloadFileTaskAsync(address: url, cancellationToken);
     }
 
+    /// <summary>
+    /// Speed-test download with strict per-chunk cancellation.
+    /// Unlike DownloadDataAsync4Speed (third-party downloader only honors the token when
+    /// starting the request), this reads the response stream chunk by chunk and checks the
+    /// token on every read, so pressing "stop" aborts an in-flight download instantly.
+    /// </summary>
+    public async Task DownloadSpeedAsync(IWebProxy webProxy, string url, Func<string, Task> onProgress, CancellationToken cancellationToken = default)
+    {
+        if (url.IsNullOrEmpty())
+        {
+            throw new ArgumentNullException(nameof(url));
+        }
+
+        var requestConfiguration = new RequestConfiguration
+        {
+            ConnectTimeout = GetConnectTimeoutMs(true),
+            Proxy = webProxy
+        };
+
+        using var handler = GetSocketsHttpHandler(requestConfiguration);
+        using var client = new HttpClient(handler);
+        client.Timeout = Timeout.InfiniteTimeSpan;
+
+        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var buffer = new byte[81920];
+        double maxSpeed = 0;
+        var hasValue = false;
+        long windowBytes = 0;
+        var windowStart = DateTime.Now;
+        var lastReport = DateTime.Now;
+
+        int read;
+        while ((read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)) > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            windowBytes += read;
+
+            var now = DateTime.Now;
+            if ((now - lastReport).TotalMilliseconds >= 1000)
+            {
+                var elapsed = (now - windowStart).TotalSeconds;
+                if (elapsed > 0)
+                {
+                    var speed = windowBytes / elapsed;
+                    windowBytes = 0;
+                    windowStart = now;
+                    lastReport = now;
+                    if (speed > 0)
+                    {
+                        hasValue = true;
+                        if (speed > maxSpeed)
+                        {
+                            maxSpeed = speed;
+                        }
+                        await onProgress((maxSpeed / 1000 / 1000).ToString("#0.0"));
+                    }
+                }
+            }
+        }
+
+        if (hasValue && maxSpeed > 0)
+        {
+            await onProgress((maxSpeed / 1000 / 1000).ToString("#0.0"));
+        }
+        else
+        {
+            await onProgress("0");
+        }
+    }
+
     public async Task DownloadFileAsync(IWebProxy? webProxy, FileDownloadRequest request, Action<FileDownloadState> onProgress, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);

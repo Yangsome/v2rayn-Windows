@@ -123,13 +123,27 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             _ = UpdateFunc("", ResUI.SpeedtestingStop);
-            await SetTestResultAsync(lstSelected.Where(it => !completedIds.ContainsKey(it.IndexId)).ToList(),
-                actionType, ResUI.SpeedtestingSkip).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             Logging.SaveLog(_tag, ex);
             _ = UpdateFunc("", ex.Message);
+        }
+        finally
+        {
+            // Belt and braces: several inner loops swallow OperationCanceledException and
+            // return normally, which would leave unfinished rows stuck at "测试中...".
+            // When a stop was requested, force-mark every unfinished row so that pressing
+            // "停止" visibly stops ALL test items (same behavior as the Android build).
+            if (ct.IsCancellationRequested)
+            {
+                var unfinished = lstSelected.Where(it => !completedIds.ContainsKey(it.IndexId)).ToList();
+                if (unfinished.Count > 0)
+                {
+                    await SetTestResultAsync(unfinished, actionType, ResUI.SpeedtestingSkip)
+                        .ConfigureAwait(false);
+                }
+            }
         }
     }
 
@@ -441,8 +455,6 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         ConcurrentDictionary<string, byte> completedIds, int concurrencyCount, bool blSpeedTest,
         CancellationToken ct = default)
     {
-        var downloadHandle = new DownloadService();
-
         var parallelOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = concurrencyCount,
@@ -470,7 +482,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
                 {
                     if (delay > 0)
                     {
-                        await DoSpeedTest(downloadHandle, it, completedIds, innerCt);
+                        await DoSpeedTest(it, completedIds, innerCt);
                     }
                     else
                     {
@@ -521,9 +533,10 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         return responseTime;
     }
 
-    private async Task DoSpeedTest(DownloadService downloadHandle, ServerTestItem it,
+    private async Task DoSpeedTest(ServerTestItem it,
         ConcurrentDictionary<string, byte> completedIds, CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         await UpdateFunc(it.IndexId, "", ResUI.Speedtesting);
 
         var webProxy = new WebProxy($"socks5://{Global.Loopback}:{it.Port}");
@@ -532,7 +545,10 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
         var linkedCt = linkedCts.Token;
-        await downloadHandle.DownloadDataAsync(url, webProxy, async (success, msg) =>
+        // Custom chunked reader: honors cancellation on every stream read, so pressing
+        // "stop" aborts an in-flight download instantly (the third-party downloader
+        // only honored the token when starting the request).
+        await DownloaderHelper.Instance.DownloadSpeedAsync(webProxy, url, async msg =>
         {
             decimal.TryParse(msg, out var dec);
             if (dec > 0)
