@@ -411,3 +411,6 @@ FodyWeavers.xsd
 .git.bak/
 .github/
 .github/
+
+# Release packages (uploaded to GitHub Releases, not git)
+v2rayN/v2rayn-custom-win-x64*.zip
