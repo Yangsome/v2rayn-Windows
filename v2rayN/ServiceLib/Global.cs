@@ -163,6 +163,10 @@ public class Global
 
     public static readonly List<string> SpeedTestUrls =
     [
+        // HTTP 源置顶：机场/出口会按 SNI 掐掉测速域名的 TLS 握手（cloudflare、
+        // hetzner 的 https 版均被掐），HTTP 没有 SNI 拦不住；经节点实测
+        // http://nbg1-speed.hetzner.com 数据正常，而 cachefly 对节点出口返回空包
+        @"http://nbg1-speed.hetzner.com/100MB.bin",
         @"https://cachefly.cachefly.net/50mb.test",
         @"https://cachefly.cachefly.net/100mb.test",
         @"https://cachefly.cachefly.net/1mb.test",
