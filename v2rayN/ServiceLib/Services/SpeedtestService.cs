@@ -57,13 +57,15 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
 
     private async Task RunLoopAsync(ESpeedActionType actionType, List<ProfileItem> selecteds, CancellationTokenSource runCts)
     {
+        var stopped = false;
         try
         {
             await RunAsync(actionType, selecteds, runCts.Token);
         }
         catch (OperationCanceledException) when (runCts.IsCancellationRequested)
         {
-            // Ignored
+            // 用户点停止：如实提示"已停止"，不能谎报"测试完成"
+            stopped = true;
         }
         finally
         {
@@ -73,7 +75,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
             }
             finally
             {
-                await UpdateFunc("", GetCompletedMessage(actionType));
+                await UpdateFunc("", stopped ? ResUI.SpeedtestingStopped : GetCompletedMessage(actionType));
             }
 
             lock (_runLock)
@@ -138,7 +140,9 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            _ = UpdateFunc("", ResUI.SpeedtestingStop);
+            // 用户停止：交给 RunLoopAsync 统一提示"已停止"；
+            // 未完成的行由下方 finally 兜底标记
+            throw;
         }
         catch (Exception ex)
         {
@@ -156,7 +160,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
                 var unfinished = lstSelected.Where(it => !completedIds.ContainsKey(it.IndexId)).ToList();
                 if (unfinished.Count > 0)
                 {
-                    await SetTestResultAsync(unfinished, actionType, ResUI.SpeedtestingSkip)
+                    await SetTestResultAsync(unfinished, actionType, ResUI.SpeedtestingStopped)
                         .ConfigureAwait(false);
                 }
             }
@@ -347,6 +351,7 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
                 try
                 {
                     await DoRealPing(it, completedIds, innerCt);
+                    completedIds.TryAdd(it.IndexId, 0);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
@@ -504,7 +509,12 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
                     else
                     {
                         await UpdateFunc(it.IndexId, "", ResUI.SpeedtestingSkip);
+                        completedIds.TryAdd(it.IndexId, 0);
                     }
+                }
+                else
+                {
+                    completedIds.TryAdd(it.IndexId, 0);
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -560,7 +570,9 @@ public class SpeedtestService(Config config, Func<SpeedTestResult, Task> updateF
             await UpdateIpInfoFunc(it.IndexId, ResUI.SpeedtestingSkip);
         }
 
-        completedIds.TryAdd(it.IndexId, 0);
+        // 注意：这里不再标记 completedIds —— 混合测试里测速在真连接之后，
+        // 过早标记会让"测速失败/已停止"的行更新被完成检查拦下，行永远卡"测试中..."。
+        // 完成标记由各调用方在自己的整段流程（真连接+测速）结束后自行添加。
         return responseTime;
     }
 

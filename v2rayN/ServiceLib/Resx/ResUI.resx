@@ -1134,6 +1134,9 @@
   <data name="SpeedtestingStop" xml:space="preserve">
     <value>Test terminating...</value>
   </data>
+  <data name="SpeedtestingStopped" xml:space="preserve">
+    <value>Stopped</value>
+  </data>
   <data name="TransportRequestHostTip5" xml:space="preserve">
     <value>gRPC Authority</value>
   </data>

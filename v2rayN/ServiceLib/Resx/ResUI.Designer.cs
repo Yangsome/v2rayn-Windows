@@ -2687,7 +2687,16 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("SpeedtestingStop", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   查找类似 已停止 的本地化字符串。
+        /// </summary>
+        public static string SpeedtestingStopped {
+            get {
+                return ResourceManager.GetString("SpeedtestingStopped", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   查找类似 Starting retesting failed parts, {0} remaining. Press ESC to terminate... 的本地化字符串。
         /// </summary>

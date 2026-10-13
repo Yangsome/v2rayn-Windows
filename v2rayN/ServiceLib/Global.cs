@@ -163,10 +163,13 @@ public class Global
 
     public static readonly List<string> SpeedTestUrls =
     [
+        // 纯 HTTP 源置顶：不少机场会按 SNI 掐掉 speed.cloudflare.com 等测速域名的 TLS 握手，
+        // HTTP 没有 SNI，无法被这样拦截
+        @"http://ipv4.download.thinkbroadband.com/50MB.zip",
+        @"http://speedtest.tele2.net/50MB.zip",
         @"https://speed.cloudflare.com/__down?bytes=50000000",
         @"https://speed.cloudflare.com/__down?bytes=10000000",
         @"https://nbg1-speed.hetzner.com/100MB.bin",
-        @"https://speed.cloudflare.com/__down?bytes=99999999",
         @"https://cachefly.cachefly.net/50mb.test",
         @"https://cachefly.cachefly.net/100mb.test",
         @"https://cachefly.cachefly.net/1mb.test",
