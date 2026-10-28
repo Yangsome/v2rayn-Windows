@@ -1,80 +1,106 @@
-# v2rayN
+# v2rayN 定制版（Windows）
 
-### A GUI client for Windows, Linux and macOS. Support [Xray](https://github.com/XTLS/Xray-core) and [sing-box](https://github.com/SagerNet/sing-box) and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)
-
-[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)
-[![Release](https://img.shields.io/github/v/release/2dust/v2rayN?logo=github&label=Release)](https://github.com/2dust/v2rayN/releases)
-[![Downloads](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github&label=Downloads)](https://github.com/2dust/v2rayN/releases)
-[![Telegram](https://img.shields.io/badge/Telegram-Chat-26A5E4?logo=telegram)](https://t.me/v2rayn)
- 
-[![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows)](https://github.com/2dust/v2rayN) 
-[![Linux](https://img.shields.io/badge/Linux-supported-FCC624?logo=linux&logoColor=000)](https://github.com/2dust/v2rayN) 
-[![macOS](https://img.shields.io/badge/macOS-supported-000000?logo=apple)](https://github.com/2dust/v2rayN) 
-[![GPG Signed](https://img.shields.io/badge/GPG-signed-4B32C3?logo=gnuprivacyguard)](https://github.com/2dust/v2rayN)
-
-
----
-
-## Download / 下载
-
-Download the latest release here:
-
-在这里下载最新版本：
-
-[https://github.com/2dust/v2rayN/releases](https://github.com/2dust/v2rayN/releases)
-
-
-> [!TIP]
-> v2rayN is the desktop version. For the mobile version, please visit the v2rayNG \
-> v2rayN 是电脑版，手机版请访问 v2rayNG
+> 基于 [2dust/v2rayN](https://github.com/2dust/v2rayN) 的 Windows 桌面增强版：**出口 IP 归属地显示、网址可达性检测、增强停止按钮、测速链路修复**。
 >
-> https://github.com/2dust/v2rayNG
+> A customized Windows desktop build of v2rayN with exit-IP geolocation, website reachability check, and an enhanced stop button.
 
 ---
 
-## Documentation / 使用文档
+## ✨ 定制功能
 
-Read the Wiki for usage guides and configuration details.
+### 1. 出口 IP + 中文归属地
+- 测速时自动显示每个节点的**出口 IP 及中文归属地**（省/市）。
+- 一眼识别节点真实落地位置，避免"假节点""绕路节点"。
 
-请阅读 Wiki 获取使用说明和配置教程。
+### 2. 网址可达性检测
+- 自定义目标网址，一键**批量检测所有节点**对该网址的可达性。
+- 适合验证流媒体、特定站点是否解锁，结果一目了然。
 
-[https://github.com/2dust/v2rayN/wiki](https://github.com/2dust/v2rayN/wiki)
+### 3. 增强停止按钮
+- 测速 / 检测过程中**随时停止**，未完成的行标记"已停止"，不再卡在"测试中…"。
+- 完成提示按测试类型区分（延迟 / 真连接 / 速度 / 混合 / 网址可达性）。
 
----
-
-## Supported Platforms / 支持平台
-
-| Platform / 平台 | x64 | x86 | arm64 | riscv64 | loong64 |
-| --- | --- | --- | --- | --- | --- |
-| Windows | ✅ | ✅ | ✅ | - | - |
-| Linux | ✅ | - | ✅ | ✅ | ✅ |
-| macOS | ✅ | - | ✅ | - | - |
-
-Minimum OS requirements: [Release files introduction](https://github.com/2dust/v2rayN/wiki/Release-files-introduction) / 最低系统要求：[发布文件介绍](https://github.com/2dust/v2rayN/wiki/Release-files-introduction)
+### 4. 测速链路修复
+- 测速下载走回调、不抛异常，避免整列卡死。
+- 默认测速源使用纯 HTTP 的 Hetzner 节点，规避部分机场对 HTTPS 测速站的 SNI 拦截。
 
 ---
 
-## GPG Verification / GPG 签名校验
+## 📥 下载
 
-Release files are signed with GPG to verify authenticity and integrity, helping prevent mirror, ISP, or CDN hijacking.
+前往 **[Releases](https://github.com/Yangsome/v2rayn-Windows/releases)** 下载最新版：
 
-发布文件已使用 GPG 签名，可用于校验文件真实性与完整性，预防镜像站、运营商或 CDN 劫持。
+| 文件 | 说明 |
+| --- | --- |
+| `v2rayn-custom-win-x64-vX.X.zip` | Windows x64 免安装版，解压即用 |
 
-### Fingerprint / 公钥指纹
+> 系统要求：Windows 10 / 11 x64。
 
-```text
-7694 5E9F 3E9A 168F 8070 F195 805D 661C
-134D FAF6 8903 C199 463C 31E5 AE90 3AE0
+---
+
+## 🚀 快速开始
+
+1. 解压到任意目录（建议使用**非中文路径**）。
+2. 双击运行 `v2rayN.exe`。
+3. 添加订阅链接，或手动导入节点。
+4. 选中节点 → 右键 → **测试真连接延迟**，验证节点可用。
+5. 需要看落地位置时，执行测速即可看到出口 IP 与归属地。
+
+---
+
+## 🔧 从源码构建
+
+需要 **.NET 10 SDK**。
+
+```bash
+dotnet publish v2rayN/v2rayN.Desktop -c Release -r win-x64
+```
+
+构建产物位于：
+
+```
+v2rayN/v2rayN.Desktop/bin/Release/net10.0/win-x64/publish/
+```
+
+> ⚠️ 注意：定制 UI 位于 **`v2rayN.Desktop`（Avalonia 工程）**；`v2rayN`（WPF 工程）为上游遗留界面，**不含**本项目的定制功能，请勿用其构建交付版本。
+
+---
+
+## 🧩 项目结构
+
+```
+v2rayN/
+├── v2rayN.Desktop/     # 定制 UI（Avalonia），构建此工程
+├── v2rayN/             # 上游遗留 WPF 界面（不含定制功能）
+├── ServiceLib/         # 核心服务库（配置、测速、内核管理）
+├── ServiceLib.Tests/   # 单元测试
+├── GlobalHotKeys/      # 全局快捷键
+└── AmazTool/           # 辅助工具
 ```
 
 ---
 
-## Community / 社区
+## ❓ 常见问题
 
-Telegram Group / Telegram 群组：
+**Q：真连接测试整列显示 -1？**
+A：多为节点 / 机场对探测目标（Google 204）的高频限流，或节点自身 ECH 配置问题。稍等几分钟再测；也可在 **设置 → v2rayN 设置 → 真连接测试地址** 切换为 YouTube 备用目标。
 
-[https://t.me/v2rayN](https://t.me/v2rayN)
+**Q：测速一直没速度？**
+A：部分机场会按 SNI 拦截测速网站的 HTTPS。本项目默认已改用纯 HTTP 的 Hetzner 测速源，若仍无速度，可在设置中更换测速地址。
 
-Telegram Channel / Telegram 频道：
+---
 
-[https://t.me/github_2dust](https://t.me/github_2dust)
+## 📄 许可证
+
+本项目基于 [v2rayN](https://github.com/2dust/v2rayN) 修改，遵循 **GNU General Public License v3.0（GPL-3.0）**。详见 [LICENSE](LICENSE)。
+
+## 🙏 致谢
+
+- [2dust/v2rayN](https://github.com/2dust/v2rayN) —— 上游项目
+- [XTLS/Xray-core](https://github.com/XTLS/Xray-core)、[SagerNet/sing-box](https://github.com/SagerNet/sing-box) —— 代理内核
+
+---
+
+## ⚠️ 免责声明
+
+本项目仅供**学习与技术研究**使用。请遵守所在地法律法规，勿用于任何非法用途。使用本软件所产生的一切后果由使用者自行承担。
